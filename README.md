@@ -1,6 +1,3 @@
-Certainly! Here's a basic README file for your extension:
-
----
 
 # TurboTune - YouTube Playback Speed Extension
 
