@@ -1,11 +1,12 @@
 {
-    "name": "Youtube Video Speed Controller",
+    "name": "TurboTune",
     "version": "0.0.1",
     "manifest_version": 2,
     "browser_action": {
         "default_popup": "main.html",
         "default_icon": "logo.png"
     },
+    "description":"Enhance your YouTube experience with TurboTune - a sleek extension that allows you to effortlessly adjust the playback speed of videos for a personalized and dynamic viewing pace.",
     "icons": {
         "128": "logo.png"
     },
