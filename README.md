@@ -5,7 +5,8 @@
 
 TurboTune is a browser extension designed to enhance your YouTube experience by giving you control over the playback speed of videos to any desired speed. Whether you prefer to speed up or slow down content, TurboTune provides a seamless and customizable solution for a personalized viewing pace.
 
-![Screenshot 2024-03-08 135324](https://github.com/divyanshu-prakash-rx/TurboTune/assets/66553918/7bf0c317-5d44-4625-a879-314a7c66c87b)
+
+![image](https://github.com/divyanshu-prakash-rx/TurboTune/assets/66553918/290532b2-4d9c-47fa-ab85-08d64b865dfd)
 
 
 
