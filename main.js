@@ -1,13 +1,20 @@
 document.getElementById("apply").addEventListener("click", function () {
     var speed = document.getElementById('speed').value;
-    ChangeSpeed(speed);
+    var speed2 = document.getElementById('inpspeed').value;
+    if (!isNaN(speed) && speed > 0) {
+        ChangeSpeed(speed);
+    }
+    else {
+        ChangeSpeed(speed2);
+    }
+
 })
-document.addEventListener("keydown",function (Event) {
-  if (Event.key==="Enter") {
-    Event.preventDefault();
-    var speed = document.getElementById('speed').value;
-    ChangeSpeed(speed);
-  }
+document.addEventListener("keydown", function (Event) {
+    if (Event.key === "Enter") {
+        Event.preventDefault();
+        var speed = document.getElementById('speed').value;
+        ChangeSpeed(speed);
+    }
 })
 
 function ChangeSpeed(speed) {
