@@ -1,29 +1,48 @@
-document.getElementById("apply").addEventListener("click", function () {
-    var speed = document.getElementById('speed').value;
-    var speed2 = document.getElementById('inpspeed').value;
-    if (!isNaN(speed) && speed > 0) {
-        ChangeSpeed(speed);
-    }
-    else {
-        ChangeSpeed(speed2);
-    }
+document.addEventListener("DOMContentLoaded", function () {
+    const applyBtn = document.getElementById("apply");
+    const speedSelect = document.getElementById('speed');
+    const speedInput = document.getElementById('inpspeed');
+    const toggle = document.getElementById('autoToggle');
 
-})
-document.addEventListener("keydown", function (Event) {
-    if (Event.key === "Enter") {
-        Event.preventDefault();
-        var speed = document.getElementById('speed').value;
-        ChangeSpeed(speed);
-    }
-})
+    chrome.storage.local.get(["speed", "autoEnabled"], function (data) {
+        if (data.speed) {
+            speedSelect.value = data.speed;
+            speedInput.value = data.speed;
+        }
+        toggle.checked = data.autoEnabled ?? false;
+    });
 
-function ChangeSpeed(speed) {
-    if (!isNaN(speed) && speed > 0) {
+    applyBtn.addEventListener("click", function () {
+        let speed = parseFloat(speedSelect.value);
+        let speed2 = parseFloat(speedInput.value);
+
+        let finalSpeed = (!isNaN(speed) && speed > 0) ? speed : speed2;
+
+        if (!isNaN(finalSpeed) && finalSpeed > 0) {
+            chrome.storage.local.set({
+                speed: finalSpeed,
+                autoEnabled: toggle.checked
+            });
+
+            ChangeSpeed(finalSpeed);
+        } else {
+            alert("Please enter a valid speed.");
+        }
+    });
+
+    document.addEventListener("keydown", function (Event) {
+        if (Event.key === "Enter") {
+            Event.preventDefault();
+            applyBtn.click();
+        }
+    });
+
+    function ChangeSpeed(speed) {
         chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-            chrome.tabs.sendMessage(tabs[0].id, { action: 'changeSpeed', speed: speed });
+            chrome.tabs.sendMessage(tabs[0].id, {
+                action: 'changeSpeed',
+                speed: speed
+            });
         });
     }
-    else {
-        alert('Invalid speed. Please enter a valid number greater than 0.');
-    }
-}
+});
