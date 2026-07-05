@@ -106,9 +106,16 @@ document.addEventListener('DOMContentLoaded', () => {
         applySpeed(parseFloat(chip.dataset.speed));
     });
 
-    // Custom input + Apply
+    // Custom input + Apply.
+    // If a custom value is typed, apply that; otherwise (empty field) just
+    // re-apply the speed currently shown in the readout.
     els.apply.addEventListener('click', () => {
-        const s = parseFloat(els.input.value);
+        const raw = els.input.value.trim();
+        if (raw === '') {
+            applySpeed(currentSpeed());
+            return;
+        }
+        const s = parseFloat(raw);
         if (!isNaN(s) && s > 0) {
             applySpeed(s);
             els.input.value = '';
