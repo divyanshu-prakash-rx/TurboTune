@@ -1,46 +1,63 @@
 
-# TurboTune - YouTube Playback Speed Extension
+# TurboTune — Playback Speed Controller
 
 ## Introduction
 
-TurboTune is a browser extension designed to enhance your YouTube experience by giving you control over the playback speed of videos to any desired speed. Whether you prefer to speed up or slow down content, TurboTune provides a seamless and customizable solution for a personalized viewing pace.
-
+TurboTune is a browser extension that gives you full control over the playback
+speed of **YouTube and any HTML5 `<video>` on the web**. Speed up lectures, slow
+down tutorials, or fine-tune any player to your preferred pace — from the popup,
+with keyboard shortcuts, or automatically on every video you open.
 
 ![image](https://github.com/divyanshu-prakash-rx/TurboTune/assets/66553918/290532b2-4d9c-47fa-ab85-08d64b865dfd)
 
+## Features
 
+- ⚡ **Works everywhere** — YouTube plus any site using HTML5 video (Vimeo,
+  course platforms, news sites, embedded players, …).
+- 🎚️ **Rich popup** — live speed readout, slider, quick presets, ± steppers,
+  and a custom speed field (0.0625×–16×).
+- ⌨️ **Keyboard shortcuts** — while watching a video:
+  - `]` faster · `[` slower · `\` reset to 1×
+  - Optional global shortcuts (rebindable at `chrome://extensions/shortcuts`):
+    `Alt+.` faster · `Alt+,` slower · `Alt+0` reset
+- 💬 **On-screen overlay** — a quick "⚡ 2×" toast shows the new speed, and it
+  stays visible in fullscreen.
+- 🔁 **Auto-apply** — remembers your speed and re-applies it across page reloads,
+  SPA navigation, and playlist / next-video swaps.
+- 🔒 **Self-contained & private** — no CDNs, no trackers, no network calls; all
+  UI assets are bundled locally.
 
 ## Installation
 
 ### Prerequisites
-
-Make sure you have a compatible web browser installed, such as Google Chrome or Mozilla Firefox.
+A Chromium-based browser (Chrome, Edge, Brave, …) or Firefox.
 
 ### Steps
+1. **Download / clone** this repository and extract it to a folder of your choice.
 
-1. **Download and Extract:**
-   - Download the extension from the [repository](https://github.com/divyanshu-prakash-rx/TurboTune.git).
+   ```
+   git clone https://github.com/divyanshu-prakash-rx/TurboTune.git
+   ```
 
-   - Extract the downloaded file to a location of your choice.
+2. **Open the extensions page:**
+   - Chrome / Edge / Brave: `chrome://extensions/`
+   - Firefox: `about:debugging#/runtime/this-firefox`
 
-2. **Open Extension Settings in Developer Mode:**
-   - Open your web browser and navigate to the extension settings.
-   - For Chrome, go to `chrome://extensions/`.
-   - For Firefox, go to `about:addons`.
+3. **Enable Developer mode**, then click **Load unpacked** (Chrome) or
+   **Load Temporary Add-on** (Firefox) and select the TurboTune folder.
 
-3. **Load Unpacked:**
-   - Enable "Developer mode" if not already enabled.
-   - Click on "Load unpacked" or "Load temporary add-on" depending on your browser.
-   - Select the folder where you extracted TurboTune.
-
-4. **Activate TurboTune:**
-   - Once loaded, you should see the TurboTune extension listed.
-   - Activate the extension to start enjoying personalized playback speeds on YouTube.
+4. The TurboTune icon appears in your toolbar — you're ready to go.
 
 ## Usage
 
-- Visit any YouTube video page.
-- Locate the TurboTune icon in your browser toolbar.
-- Adjust the playback speed to your preference using the intuitive controls.
+- Open any video page and click the TurboTune icon to set a speed, or use the
+  `[` / `]` / `\` shortcuts directly on the page.
+- Turn on **Auto-apply** to have your chosen speed follow you across videos and
+  reloads automatically.
 
-Enjoy a customized YouTube experience with TurboTune!
+## Tech notes
+
+Built on **Manifest V3** (service worker + `chrome.action` + `chrome.commands`),
+so it stays supported by current Chrome/Edge versions.
+
+Enjoy a customized viewing experience with TurboTune!

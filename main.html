@@ -5,54 +5,291 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TurboTune</title>
-    <link rel="icon" type="image/png" sizes="32x32" href="./images/favicon-32x32.png">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #041a33;
+            --bg-2: #06284d;
+            --card: rgba(255, 255, 255, 0.06);
+            --line: rgba(120, 190, 255, 0.22);
+            --accent: #3d9bff;
+            --accent-2: #6ad7ff;
+            --text: #eaf3ff;
+            --muted: #9fb6d4;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            width: 320px;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+            color: var(--text);
+            background: radial-gradient(120% 120% at 0% 0%, var(--bg-2) 0%, var(--bg) 55%);
+            padding: 16px 16px 12px;
+            user-select: none;
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        header img { height: 26px; width: auto; }
+
+        header h1 {
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            background: linear-gradient(90deg, var(--accent-2), var(--accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        /* Live speed readout + steppers */
+        .readout {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 10px 12px;
+            margin-bottom: 12px;
+        }
+
+        .readout .value {
+            font-size: 34px;
+            font-weight: 800;
+            line-height: 1;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .readout .value small { font-size: 16px; font-weight: 700; color: var(--muted); }
+        .readout .label { font-size: 11px; color: var(--muted); margin-top: 3px; letter-spacing: 0.4px; }
+
+        .stepper {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text);
+            font-size: 22px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 120ms ease, transform 60ms ease;
+        }
+        .stepper:hover { background: rgba(61, 155, 255, 0.25); }
+        .stepper:active { transform: scale(0.94); }
+
+        /* Slider */
+        .slider-wrap { margin-bottom: 14px; }
+        input[type="range"] {
+            width: 100%;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 6px;
+            border-radius: 6px;
+            background: linear-gradient(90deg, var(--accent) 0%, var(--accent) var(--fill, 30%), rgba(255,255,255,0.15) var(--fill, 30%));
+            outline: none;
+            cursor: pointer;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #fff;
+            border: 3px solid var(--accent);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+        }
+        .slider-scale {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+
+        /* Preset chips */
+        .presets {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+        .chip {
+            padding: 7px 0;
+            border-radius: 9px;
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--text);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 120ms ease;
+        }
+        .chip:hover { background: rgba(61, 155, 255, 0.22); }
+        .chip.active {
+            background: linear-gradient(90deg, var(--accent), var(--accent-2));
+            border-color: transparent;
+            color: #04121f;
+        }
+
+        /* Custom input row */
+        .custom-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .custom-row input {
+            flex: 1;
+            padding: 9px 12px;
+            border-radius: 10px;
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text);
+            font-size: 14px;
+        }
+        .custom-row input::placeholder { color: var(--muted); }
+        .custom-row input:focus { outline: none; border-color: var(--accent); }
+        .btn {
+            padding: 9px 16px;
+            border-radius: 10px;
+            border: none;
+            background: linear-gradient(90deg, var(--accent), var(--accent-2));
+            color: #04121f;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 60ms ease, filter 120ms ease;
+        }
+        .btn:hover { filter: brightness(1.08); }
+        .btn:active { transform: scale(0.96); }
+
+        /* Toggle row */
+        .toggle-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 9px 12px;
+            border-radius: 11px;
+            background: var(--card);
+            border: 1px solid var(--line);
+            margin-bottom: 10px;
+        }
+        .toggle-row span { font-size: 12.5px; }
+        .switch { position: relative; width: 40px; height: 22px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .track {
+            position: absolute;
+            inset: 0;
+            border-radius: 22px;
+            background: rgba(255,255,255,0.18);
+            transition: background 160ms ease;
+        }
+        .track::before {
+            content: "";
+            position: absolute;
+            width: 16px; height: 16px;
+            left: 3px; top: 3px;
+            border-radius: 50%;
+            background: #fff;
+            transition: transform 160ms ease;
+        }
+        .switch input:checked + .track { background: var(--accent); }
+        .switch input:checked + .track::before { transform: translateX(18px); }
+
+        .status {
+            font-size: 11px;
+            color: var(--muted);
+            text-align: center;
+            min-height: 14px;
+            margin-bottom: 8px;
+        }
+        .status.warn { color: #ffcf7a; }
+
+        .hints {
+            font-size: 10.5px;
+            color: var(--muted);
+            text-align: center;
+            line-height: 1.5;
+            border-top: 1px solid var(--line);
+            padding-top: 8px;
+        }
+        .hints kbd {
+            display: inline-block;
+            padding: 1px 6px;
+            border-radius: 5px;
+            border: 1px solid var(--line);
+            background: rgba(255,255,255,0.07);
+            font-family: ui-monospace, monospace;
+            font-size: 10px;
+        }
+        footer {
+            text-align: right;
+            font-size: 10px;
+            color: var(--muted);
+            margin-top: 6px;
+        }
+    </style>
 </head>
 
-<body style="height: 270px; width: 350px; border: 1px solid white;">
-    <div class="container" style="background-color: #01203d;">
-        <div style="height: 100vh;">
-            <div class="d-flex justify-content-center align-items-center">
-                <div>
-                    <div class="mb-3">
-                        <h1 class="text-white text-center mt-3" style="font-family: cursive;">
-                            TurboTune <img src="rab.png" style="height: 30px;">
-                        </h1>
-                    </div>
+<body>
+    <header>
+        <h1>TurboTune</h1>
+        <img src="rab.png" alt="logo">
+    </header>
 
-                    <div class="input-group mb-2">
-                        <span class="input-group-text"><i class="fa-solid fa-gauge"></i></span>
-                        <input id="inpspeed" class="form-control speed" placeholder="Enter Speed">
-                    </div>
+    <div class="readout">
+        <button class="stepper" id="minus" title="Slower ( [ )">−</button>
+        <div style="text-align:center;">
+            <div class="value"><span id="speedValue">1.00</span><small>×</small></div>
+            <div class="label" id="speedLabel">CURRENT SPEED</div>
+        </div>
+        <button class="stepper" id="plus" title="Faster ( ] )">+</button>
+    </div>
 
-                    <h6 class="text-white text-center">OR select Below</h6>
-                    <select class="form-select text-center mb-2" name="speed" id="speed">
-                        <option selected disabled> Playback Speed </option>
-                        <option value="0.25">0.25x</option>
-                        <option value="0.5">0.5x</option>
-                        <option value="0.75">0.75x</option>
-                        <option value="1">1x</option>
-                        <option value="1.5">1.5x</option>
-                        <option value="2">2x</option>
-                        <option value="2.5">2.5x</option>
-                        <option value="3">3x</option>
-                        <option value="3.5">3.5x</option>
-                        <option value="4">4x</option>
-                    </select>
-
-                    <div class="form-check form-switch text-center mb-2">
-                        <input class="form-check-input" type="checkbox" id="autoToggle">
-                        <label class="form-check-label text-white" for="autoToggle">Auto Apply on Refresh</label>
-                    </div>
-
-                    <div class="m-3 text-center">
-                        <button class="btn btn-primary" id="apply">Apply</button>
-                    </div>
-                </div>
-            </div>
-            <h6 class="text-end text-white my-1 p-0" style="font-size: 80%;">©Divyanshu Prakash</h6>
+    <div class="slider-wrap">
+        <input type="range" id="slider" min="0.25" max="4" step="0.05" value="1">
+        <div class="slider-scale">
+            <span>0.25×</span><span>1×</span><span>2×</span><span>3×</span><span>4×</span>
         </div>
     </div>
+
+    <div class="presets" id="presets">
+        <button class="chip" data-speed="0.5">0.5×</button>
+        <button class="chip" data-speed="1">1×</button>
+        <button class="chip" data-speed="1.5">1.5×</button>
+        <button class="chip" data-speed="2">2×</button>
+        <button class="chip" data-speed="3">3×</button>
+    </div>
+
+    <div class="custom-row">
+        <input id="inpspeed" type="number" step="0.05" min="0.0625" max="16" placeholder="Custom speed…">
+        <button class="btn" id="apply">Apply</button>
+    </div>
+
+    <div class="toggle-row">
+        <span>Auto-apply on every video</span>
+        <label class="switch">
+            <input type="checkbox" id="autoToggle">
+            <span class="track"></span>
+        </label>
+    </div>
+
+    <div class="status" id="status"></div>
+
+    <div class="hints">
+        On page: <kbd>[</kbd> slower &nbsp; <kbd>]</kbd> faster &nbsp; <kbd>\</kbd> reset
+    </div>
+
+    <footer>© Divyanshu Prakash</footer>
 
     <script src="main.js"></script>
 </body>

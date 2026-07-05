@@ -1,12 +1,14 @@
 {
     "name": "TurboTune",
-    "version": "0.0.2",
-    "manifest_version": 2,
-    "browser_action": {
+    "version": "0.3.0",
+    "manifest_version": 3,
+    "description": "Take control of playback speed on YouTube and any HTML5 video. Slider, presets, keyboard shortcuts, on-screen overlay, and auto-apply.",
+    "action": {
         "default_popup": "main.html",
-        "default_icon": "logo.png"
+        "default_icon": {
+            "128": "logo.png"
+        }
     },
-    "description": "Enhance your YouTube experience with TurboTune - a sleek extension that allows you to effortlessly adjust the playback speed of videos for a personalized and dynamic viewing pace.",
     "icons": {
         "128": "logo.png"
     },
@@ -17,12 +19,36 @@
     "content_scripts": [
         {
             "matches": [
-                "https://www.youtube.com/*"
+                "<all_urls>"
             ],
             "js": [
                 "content.js"
             ],
-            "run_at": "document_idle"
+            "run_at": "document_idle",
+            "all_frames": true
         }
-    ]
+    ],
+    "commands": {
+        "speed-up": {
+            "suggested_key": {
+                "default": "Alt+Period"
+            },
+            "description": "Increase playback speed"
+        },
+        "speed-down": {
+            "suggested_key": {
+                "default": "Alt+Comma"
+            },
+            "description": "Decrease playback speed"
+        },
+        "speed-reset": {
+            "suggested_key": {
+                "default": "Alt+0"
+            },
+            "description": "Reset playback speed to 1x"
+        }
+    },
+    "background": {
+        "service_worker": "background.js"
+    }
 }
