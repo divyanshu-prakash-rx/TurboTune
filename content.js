@@ -6,6 +6,11 @@
 (() => {
     'use strict';
 
+    // Guard against double-injection (declared content script + on-demand
+    // injection from the popup) so we never register duplicate listeners.
+    if (window.__turboTuneLoaded) return;
+    window.__turboTuneLoaded = true;
+
     const MIN_SPEED = 0.0625;   // 1/16x
     const MAX_SPEED = 16;
     const STEP = 0.25;
@@ -216,40 +221,39 @@
 
     // ---- messaging (popup + background commands) ----------------------------
 
+    // The popup broadcasts to every frame (all_frames). To avoid a frameless
+    // subframe (ads, embeds) answering first with hasVideo:false, each frame
+    // only *responds* when it actually has a video — but SET_SPEED/NUDGE are
+    // still *applied* in every frame so any video, wherever it lives, reacts.
     chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
-        switch (request?.type) {
-            case 'GET_STATE': {
-                const v = getPrimaryVideo();
-                sendResponse({
-                    hasVideo: !!v,
-                    currentSpeed: v ? round2(v.playbackRate) : null,
-                    desiredSpeed: round2(desiredSpeed),
-                    active,
-                });
-                break;
-            }
-            case 'SET_SPEED': {
-                const s = parseFloat(request.speed);
-                if (!isNaN(s)) applySpeed(s, { showUi: true });
-                sendResponse({ ok: true, speed: round2(desiredSpeed), hasVideo: !!getPrimaryVideo() });
-                break;
-            }
-            case 'NUDGE': {
-                const s = nudge(parseFloat(request.delta) || 0);
-                sendResponse({ ok: true, speed: s, hasVideo: !!getPrimaryVideo() });
-                break;
-            }
-            // Backward-compatible with the old message shape.
-            case undefined:
-            default:
-                if (request?.action === 'changeSpeed') {
-                    const s = parseFloat(request.speed);
-                    if (!isNaN(s)) applySpeed(s, { showUi: true });
-                    sendResponse({ ok: true });
-                }
-                break;
+        const type = request?.type
+            || (request?.action === 'changeSpeed' ? 'SET_SPEED' : undefined);
+
+        const hasVideo = getVideos().length > 0;
+
+        if (type === 'SET_SPEED') {
+            const s = parseFloat(request.speed);
+            if (!isNaN(s)) applySpeed(s, { showUi: hasVideo });
+        } else if (type === 'NUDGE') {
+            if (hasVideo) nudge(parseFloat(request.delta) || 0);
         }
-        return true;   // keep the channel open for the async response
+
+        // Only frames that host a video answer, so the popup's callback gets a
+        // meaningful reply. Frames without one decline (return false).
+        if (!hasVideo) return false;
+
+        if (type === 'GET_STATE') {
+            const v = getPrimaryVideo();
+            sendResponse({
+                hasVideo: true,
+                currentSpeed: round2(v.playbackRate),
+                desiredSpeed: round2(desiredSpeed),
+                active,
+            });
+        } else {
+            sendResponse({ ok: true, hasVideo: true, speed: round2(desiredSpeed) });
+        }
+        return true;
     });
 
     // ---- persistence --------------------------------------------------------

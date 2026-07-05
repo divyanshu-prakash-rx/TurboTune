@@ -20,21 +20,44 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     let hasVideo = false;
+    let tabId = null;
+    let injectable = false;   // can we run on this page at all?
 
     const clamp = (v) => Math.min(MAX, Math.max(MIN, v));
     const round2 = (v) => Math.round(v * 100) / 100;
 
     // --- talk to the active tab's content script ----------------------------
 
-    function sendToTab(message) {
+    function getActiveTab() {
         return new Promise((resolve) => {
             chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-                const tab = tabs[0];
-                if (!tab || !tab.id) return resolve(null);
-                chrome.tabs.sendMessage(tab.id, message, (response) => {
-                    if (chrome.runtime.lastError) return resolve(null);
-                    resolve(response);
-                });
+                resolve(tabs[0] || null);
+            });
+        });
+    }
+
+    // Make sure the content script is present even if the tab was open before
+    // the extension was (re)loaded. Idempotent thanks to the __turboTuneLoaded
+    // guard in content.js. Returns false on restricted pages (chrome://, store).
+    async function ensureInjected() {
+        if (tabId == null) return false;
+        try {
+            await chrome.scripting.executeScript({
+                target: { tabId, allFrames: true },
+                files: ['content.js'],
+            });
+            return true;
+        } catch (_) {
+            return false;
+        }
+    }
+
+    function sendToTab(message) {
+        return new Promise((resolve) => {
+            if (tabId == null) return resolve(null);
+            chrome.tabs.sendMessage(tabId, message, (response) => {
+                void chrome.runtime.lastError;   // swallow "no receiver" noise
+                resolve(response || null);
             });
         });
     }
@@ -137,10 +160,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- init: load stored prefs + live state from the tab ------------------
 
-    chrome.storage.local.get(['speed', 'autoEnabled'], async (data) => {
+    (async () => {
+        const data = await new Promise((r) =>
+            chrome.storage.local.get(['speed', 'autoEnabled'], r));
         const stored = round2(clamp(parseFloat(data.speed) || 1));
         els.toggle.checked = data.autoEnabled ?? true;   // default ON
         renderSpeed(stored);
+
+        const tab = await getActiveTab();
+        tabId = tab && tab.id != null ? tab.id : null;
+        injectable = await ensureInjected();
 
         const state = await sendToTab({ type: 'GET_STATE' });
         if (state && state.hasVideo) {
@@ -149,7 +178,9 @@ document.addEventListener('DOMContentLoaded', () => {
             setStatus(`Video detected · playing at ${round2(state.currentSpeed)}×`);
         } else {
             hasVideo = false;
-            setStatus('No video detected on this tab yet.', true);
+            setStatus(injectable
+                ? 'No video detected on this tab yet.'
+                : "TurboTune can't run on this page.", true);
         }
-    });
+    })();
 });
